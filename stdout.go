@@ -13,7 +13,7 @@ import (
 
 	svg "github.com/ajstarks/svgo"
 	"github.com/redsift/go-errs"
-	"github.com/redsift/go-stats"
+	"github.com/redsift/go-stats/stats"
 	"github.com/vdobler/chart"
 	"github.com/vdobler/chart/imgg"
 	"github.com/vdobler/chart/svgg"
