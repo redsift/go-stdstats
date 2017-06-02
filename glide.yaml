@@ -1,0 +1,10 @@
+package: github.com/redsift/go-stdstats
+import:
+- package: github.com/redsift/go-errs
+- package: github.com/redsift/go-stats
+- package: github.com/vdobler/chart
+  version: 293b01f8b75d94214d56586bf8362d14e15533fd
+  repo: https://github.com/vdobler/chart
+  vcs: git
+- package: github.com/ajstarks/svgo
+  version: a7778b8b562eca0ba5b3d4a58e2f17e5800d93fb
