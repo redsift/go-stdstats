@@ -74,10 +74,20 @@ type stdoutC struct {
 	hist      dataList
 	source    []string
 	whitelist []string
+	jobs 	chan *statP
+}
+
+type statP struct {
+	stat string
+	value float64
+	tags []string
 }
 
 func NewStdout(dump string, whitelist []string) stats.Collector {
-	return &stdoutC{dump, make(dataList), make([]string, 0, initialSourceSize), whitelist}
+	j := make(chan *statP, 1024)
+	s := &stdoutC{dump, make(dataList), make([]string, 0, initialSourceSize), whitelist, j}
+	go s.processJobs()
+	return s
 }
 
 func (d *stdoutC) whiteListed(stat string) bool {
@@ -106,35 +116,45 @@ func (d *stdoutC) Gauge(stat string, value float64, tags []string) {
 }
 
 func (d *stdoutC) Timing(stat string, value time.Duration, tags []string) {
-	if !d.whiteListed(stat) {
-		return
-	}
-
-	tg := strings.Join(tags, ",")
-
-	fst, exists := d.hist[stat]
-	if !exists {
-		fst = make(map[string][]float64)
-		d.source = append(d.source, stat)
-	}
-
-	data, exists := fst[tg]
-	if !exists {
-		data = make([]float64, 0, initialListLength)
-	}
 	v := float64(value) / float64(time.Millisecond)
-	if v < 1 {
-		// do this so the charting puts these in the 0 bucket for the histogram
-		v = 0.0
+
+	d.jobs <- &statP{stat, v, tags}
+}
+
+func (d *stdoutC) processJobs() {
+	for j := range d.jobs {
+		if !d.whiteListed(j.stat) {
+			return
+		}
+
+		tg := strings.Join(j.tags, ",")
+
+
+		fst, exists := d.hist[j.stat]
+		if !exists {
+			fst = make(map[string][]float64)
+			d.source = append(d.source, j.stat)
+		}
+
+		data, exists := fst[tg]
+		if !exists {
+			data = make([]float64, 0, initialListLength)
+		}
+		v := j.value
+		if v < 1 {
+			// do this so the charting puts these in the 0 bucket for the histogram
+			v = 0.0
+		}
+
+		data = append(data, v)
+		fst[tg] = data
+		d.hist[j.stat] = fst
 	}
 
-	data = append(data, v)
-	fst[tg] = data
-	d.hist[stat] = fst
 }
 
 func (d *stdoutC) Histogram(stat string, value float64, tags []string) {
-
+	d.jobs <- &statP{stat, value, tags}
 }
 
 func (d *stdoutC) renderToStdout(hists []*chart.HistChart) {
@@ -201,6 +221,8 @@ func sortTags(data map[string][]float64) []string {
 }
 
 func (d *stdoutC) Close() {
+	close(d.jobs)
+
 	if len(d.hist) == 0 {
 		return
 	}
