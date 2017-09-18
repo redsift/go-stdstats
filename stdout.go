@@ -74,13 +74,13 @@ type stdoutC struct {
 	hist      dataList
 	source    []string
 	whitelist []string
-	jobs 	chan *statP
+	jobs      chan *statP
 }
 
 type statP struct {
-	stat string
+	stat  string
 	value float64
-	tags []string
+	tags  []string
 }
 
 func NewStdout(dump string, whitelist []string) stats.Collector {
@@ -124,11 +124,10 @@ func (d *stdoutC) Timing(stat string, value time.Duration, tags []string) {
 func (d *stdoutC) processJobs() {
 	for j := range d.jobs {
 		if !d.whiteListed(j.stat) {
-			return
+			continue
 		}
 
 		tg := strings.Join(j.tags, ",")
-
 
 		fst, exists := d.hist[j.stat]
 		if !exists {
