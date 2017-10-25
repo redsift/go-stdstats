@@ -12,7 +12,6 @@ import (
 	"time"
 
 	svg "github.com/ajstarks/svgo"
-	"github.com/redsift/go-errs"
 	"github.com/redsift/go-stats/stats"
 	"github.com/vdobler/chart"
 	"github.com/vdobler/chart/imgg"
@@ -103,19 +102,19 @@ func (d *stdoutC) whiteListed(stat string) bool {
 	return false
 }
 
-func (d *stdoutC) Inform(title, text string, tags []string) {}
+func (d *stdoutC) Inform(title, text string, tags ...string) {}
 
-func (d *stdoutC) Error(pe *errs.PropagatedError, tags []string) {}
+func (d *stdoutC) Error(pe error, tags ...string) {}
 
-func (d *stdoutC) Count(stat string, count float64, tags []string) {
+func (d *stdoutC) Count(stat string, count float64, tags ...string) {
 	//TODO: this
 }
 
-func (d *stdoutC) Gauge(stat string, value float64, tags []string) {
+func (d *stdoutC) Gauge(stat string, value float64, tags ...string) {
 	//TODO: this
 }
 
-func (d *stdoutC) Timing(stat string, value time.Duration, tags []string) {
+func (d *stdoutC) Timing(stat string, value time.Duration, tags ...string) {
 	v := float64(value) / float64(time.Millisecond)
 
 	d.jobs <- &statP{stat, v, tags}
@@ -152,9 +151,11 @@ func (d *stdoutC) processJobs() {
 
 }
 
-func (d *stdoutC) Histogram(stat string, value float64, tags []string) {
+func (d *stdoutC) Histogram(stat string, value float64, tags ...string) {
 	d.jobs <- &statP{stat, value, tags}
 }
+
+func (d *stdoutC) Tags() []string { return nil }
 
 func (d *stdoutC) renderToStdout(hists []*chart.HistChart) {
 
