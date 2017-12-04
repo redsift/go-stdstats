@@ -157,6 +157,8 @@ func (d *stdoutC) Histogram(stat string, value float64, tags ...string) {
 
 func (d *stdoutC) Tags() []string { return nil }
 
+func (d *stdoutC) With(_ ...string) stats.Collector { return d }
+
 func (d *stdoutC) renderToStdout(hists []*chart.HistChart) {
 
 	fmt.Println(strings.Repeat("-", width))
