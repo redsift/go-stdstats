@@ -1,0 +1,9 @@
+# go-stdstats
+
+[[constraint]]
+  name = "github.com/vdobler/chart"
+  revision = "293b01f8b75d94214d56586bf8362d14e15533fd"
+
+[[constraint]]
+  name = "github.com/ajstarks/svgo"
+  revision = "a7778b8b562eca0ba5b3d4a58e2f17e5800d93fb"
